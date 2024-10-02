@@ -1,5 +1,12 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction, LoaderFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
+import sanityClient from "~/sanityClient";
+
+export let loader: LoaderFunction = async () => {
+  const data = await sanityClient.fetch('*[_type == "post"]');
+  return { data };
+};
 
 export const meta: MetaFunction = () => {
   return [
@@ -9,13 +16,14 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
+  let { data } = useLoaderData<typeof loader>();
   let { t } = useTranslation();
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-16">
         <header className="flex flex-col items-center gap-9">
           <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            <h1>{t("greeting")}</h1>
+            <span>{t("greeting")}</span>
             <span className="sr-only">Remix</span>
           </h1>
           <div className="h-[144px] w-[434px]">
@@ -35,6 +43,11 @@ export default function Index() {
           <p className="leading-6 text-gray-700 dark:text-gray-200">
             What&apos;s next?
           </p>
+          <div>
+            {data.map((item: any) => (
+              <div key={item._id}>{item.title}</div>
+            ))}
+          </div>
           <ul>
             {resources.map(({ href, text, icon }) => (
               <li key={href}>
