@@ -2,10 +2,14 @@ import type { MetaFunction, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
 import sanityClient from "~/sanityClient";
+import i18next from "~/i18next.server";
 
-export let loader: LoaderFunction = async () => {
-  const data = await sanityClient.fetch('*[_type == "post"]');
-  return { data };
+export let loader: LoaderFunction = async ({ request }: any) => {
+  let locale = await i18next.getLocale(request);
+  const data = await sanityClient.fetch(
+    `*[_type == "post" && language == "${locale}"]`
+  );
+  return { data, locale };
 };
 
 export const meta: MetaFunction = () => {
@@ -16,7 +20,7 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
-  let { data } = useLoaderData<typeof loader>();
+  let { data, locale } = useLoaderData<typeof loader>();
   let { t } = useTranslation();
   return (
     <div className="flex h-screen items-center justify-center">
@@ -41,11 +45,11 @@ export default function Index() {
         </header>
         <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
           <p className="leading-6 text-gray-700 dark:text-gray-200">
-            What&apos;s next?
+            <span>{locale}</span>
           </p>
           <div>
             {data.map((item: any) => (
-              <div key={item._id}>{item.title}</div>
+              <div key={item._id}>{item.body[0].children[0].text}</div>
             ))}
           </div>
           <ul>
