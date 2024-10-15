@@ -6,6 +6,8 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
+import React, { useEffect } from "react";
+
 import { json } from "@remix-run/node";
 import type { LinksFunction } from "@remix-run/node";
 import { useChangeLanguage } from "remix-i18next/react";
@@ -43,6 +45,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   let { locale } = useLoaderData<typeof loader>();
   let { i18n } = useTranslation();
   useChangeLanguage(locale);
+
+  useEffect(() => {
+    console.log("Locale changed:", locale);
+  }, [locale]);
 
   return (
     <html lang={locale} dir={i18n.dir()}>

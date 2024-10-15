@@ -1,111 +1,58 @@
-import React from "react";
 import type { MetaFunction, LoaderFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import sanityClient from "~/sanityClient";
+import {
+  useLoaderData,
+  Link,
+  useNavigate,
+  useLocation,
+  Form,
+} from "@remix-run/react";
 import i18next from "~/i18next.server";
-import LanguageSwitcher from "~/components/LanguageSwitcher";
+import { client } from "~/sanity/client";
+import { HOME_QUERY } from "~/sanity/queries";
+import { useQuery } from "@sanity/react-loader";
+import { type LoaderFunctionArgs } from "@remix-run/node";
+import { useTranslation } from "react-i18next";
+import { urlFor } from "~/sanity/image";
+import { loadQuery } from "~/sanity/loader.server";
+import { Button } from "~/components/ui/button";
 
-export let loader: LoaderFunction = async ({ request }: any) => {
-  const data = await sanityClient.fetch(`*[_type == "homepage"]`);
-  console.log(data);
-  return {
-    headerLinks: [
-      { label: "Home", href: "/" },
-      { label: "About", href: "/about" },
-      { label: "Ecosystems", href: "/flora-fauna" },
-      { label: "Plan Your Visit", href: "/plan-your-visit" },
-      { label: "Conservation", href: "/conservation" },
-      { label: "Contact", href: "/contact" },
-    ],
-    heroSection: {
-      title: "El Yunque Rainforest",
-      description:
-        "Discover the heart of Puerto Rico - A natural treasure of biodiversity.",
-      buttonLabel: "Learn More",
-    },
-    quickLinks: [
-      {
-        title: "Explore Ecosystems",
-        image: "https://via.placeholder.com/300",
-        alt: "Flora & Fauna",
-        description: "Discover the diverse species that call El Yunque home.",
-        href: "/flora-fauna",
-      },
-      {
-        title: "Plan Your Visit",
-        image: "https://via.placeholder.com/300",
-        alt: "Plan Your Visit",
-        description:
-          "Make the most out of your trip with our detailed visitor's guide.",
-        href: "/plan-your-visit",
-      },
-      {
-        title: "Learn About Conservation",
-        image: "https://via.placeholder.com/300",
-        alt: "Conservation",
-        description: "See how you can get involved and help protect El Yunque.",
-        href: "/conservation",
-      },
-    ],
-    recentUpdate: {
-      title: "Spotlight: The Puerto Rican Parrot",
-      image: "https://via.placeholder.com/400",
-      alt: "Puerto Rican Parrot",
-      description:
-        "Learn about the efforts to protect the critically endangered Puerto Rican Parrot and the conservation initiatives that are making a difference.",
-      href: "/blog/spotlight-puerto-rican-parrot",
-    },
-    historySection: {
-      title: "History & Significance",
-      description:
-        "El Yunque Rainforest holds great historical and ecological importance. From its cultural value to its role in sustaining biodiversity, it remains a vital part of Puerto Rico's natural heritage.",
-      href: "/about",
-    },
-    conservationSection: {
-      title: "Ecology & Conservation",
-      items: [
-        {
-          title: "Conservation Efforts",
-          description:
-            "Discover ongoing conservation projects, including the partnerships and initiatives focused on protecting El Yunque's unique biodiversity.",
-          href: "/conservation",
-        },
-        {
-          title: "Get Involved",
-          description:
-            "Find out how you can participate in conservation efforts, volunteer opportunities, or donate to support El Yunque.",
-          href: "/get-involved",
-        },
-      ],
-    },
-    educationalResources: {
-      title: "Educational Resources",
-      items: [
-        {
-          title: "Activities for Kids",
-          description:
-            "Printable activities, coloring pages, and interactive quizzes that help children learn about the rainforest in a fun way.",
-          href: "/educational-resources/kids",
-        },
-        {
-          title: "Teacher Resources",
-          description:
-            "Lesson plans, video materials, and other tools for educators who want to teach students about rainforest ecology.",
-          href: "/educational-resources/teachers",
-        },
-      ],
-    },
-    contactSection: {
-      title: "Contact & Support",
-      description:
-        "Have questions or want to get in touch? Use the contact form below to ask questions, suggest content, or get more information. You can also follow us on social media to stay updated with the latest news.",
-      href: "/contact",
-    },
-  };
+export let loader: LoaderFunction = async ({ request, params }: any) => {
+  let locale = await i18next.getLocale(request);
+  const data = await client.fetch(`*[_type == "homepage"]`);
+  return { data: data[0], locale, params };
 };
 
-const HomePage = () => {
-  const data = useLoaderData();
+function LanguageSwitcher() {
+  const { i18n } = useTranslation();
+  const { locale } = useLoaderData<{ locale: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleLanguageSwitch = () => {
+    const newLocale = locale === "es" ? "en" : "es";
+    i18n.changeLanguage(newLocale);
+
+    // Construct the new path based on the current path and new locale
+    const newPath =
+      newLocale === "es"
+        ? `/es${location.pathname.replace(/^\/es/, "")}`
+        : location.pathname.replace(/^\/es/, "");
+    console.log(newPath);
+    // Navigate to the new path
+    navigate(newPath, { replace: true });
+  };
+
+  return (
+    <div className="ml-auto flex items-center space-x-4">
+      <Button variant="outline" onClick={handleLanguageSwitch}>
+        {locale === "es" ? "Switch to English" : "Cambiar a Español"}
+      </Button>
+    </div>
+  );
+}
+
+export default function Tests() {
+  const { data } = useLoaderData<typeof loader>();
 
   return (
     <div className="min-h-screen bg-green-50">
@@ -121,6 +68,7 @@ const HomePage = () => {
                 </Link>
               </li>
             ))}
+            <LanguageSwitcher />
           </ul>
         </nav>
       </header>
@@ -130,7 +78,7 @@ const HomePage = () => {
         id="hero"
         className="relative w-full h-[30vh] bg-cover bg-center flex items-center justify-center p-6 md:p-6 md:p-8"
         style={{
-          backgroundImage: "url('https://via.placeholder.com/1200x600')",
+          backgroundImage: `url('https://via.placeholder.com/1200x600')`,
         }}
       >
         <div className="bg-black bg-opacity-50 text-white p-4 md:p-6 md:p-16 rounded-lg text-center">
@@ -234,10 +182,10 @@ const HomePage = () => {
       {/* Educational Resources Section */}
       <section className="p-10 md:p-20 bg-green-100">
         <h2 className="text-4xl font-bold mb-12 text-left">
-          {data.educationalResources.title}
+          {data.educationSection.title}
         </h2>
         <div className="grid gap-10 grid-cols-1 md:grid-cols-2">
-          {data.educationalResources.items.map((resource, index) => (
+          {data.educationSection.items.map((resource, index) => (
             <div
               key={index}
               className="bg-white p-10 rounded-lg shadow-md text-left"
@@ -286,6 +234,4 @@ const HomePage = () => {
       </footer>
     </div>
   );
-};
-
-export default HomePage;
+}

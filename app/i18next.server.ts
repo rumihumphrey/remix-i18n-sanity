@@ -10,7 +10,7 @@ let i18next = new RemixI18Next({
     async findLocale(request) {
       let url = new URL(request.url);
       let locale = url.pathname.split("/").at(1);
-      return locale;
+      return locale || null;
     },
   },
   // This is the configuration for i18next used

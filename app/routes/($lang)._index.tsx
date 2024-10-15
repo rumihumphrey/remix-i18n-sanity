@@ -1,15 +1,62 @@
 import type { MetaFunction, LoaderFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Link, Form } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
+import { Facebook, Instagram, Twitter, ChevronDown } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
 import sanityClient from "~/sanityClient";
 import i18next from "~/i18next.server";
+import LanguageSwitcher from "~/components/LanguageSwitcher";
 
 export let loader: LoaderFunction = async ({ request }: any) => {
   let locale = await i18next.getLocale(request);
   const data = await sanityClient.fetch(
     `*[_type == "post" && language == "${locale}"]`
   );
-  return { data, locale };
+  const heroImage = "https://via.placeholder.com/1200x600?text=El+Yunque+Hero";
+  const exploreImages = [
+    {
+      src: "https://via.placeholder.com/400x300?text=Flora",
+      alt: "Flora",
+      title: "Diverse Flora",
+      description: "Discover the unique plant life of El Yunque",
+    },
+    {
+      src: "https://via.placeholder.com/400x300?text=Fauna",
+      alt: "Fauna",
+      title: "Exotic Fauna",
+      description: "Encounter the wildlife that calls El Yunque home",
+    },
+    {
+      src: "https://via.placeholder.com/400x300?text=Waterfall",
+      alt: "Waterfall",
+      title: "Natural Wonders",
+      description: "Experience breathtaking waterfalls and vistas",
+    },
+  ];
+  const news = [
+    {
+      title: "New Species Discovered",
+      description:
+        "Researchers have identified a new frog species in El Yunque.",
+    },
+    {
+      title: "Trail Restoration Project",
+      description: "Volunteers needed for upcoming trail maintenance work.",
+    },
+  ];
+  const galleryImages = Array.from({ length: 8 }, (_, i) => ({
+    src: `https://via.placeholder.com/400x300?text=Gallery+Image+${i + 1}`,
+    alt: `Gallery Image ${i + 1}`,
+  }));
+
+  return { data, locale, heroImage, exploreImages, news, galleryImages };
 };
 
 export const meta: MetaFunction = () => {
@@ -20,55 +67,204 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
-  let { data, locale } = useLoaderData<typeof loader>();
+  const { data, locale, heroImage, exploreImages, news, galleryImages } =
+    useLoaderData<typeof loader>();
   let { t } = useTranslation();
+
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-16">
-        <header className="flex flex-col items-center gap-9">
-          <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            <span>{t("greeting")}</span>
-            <span className="sr-only">Remix</span>
-          </h1>
-          <div className="h-[144px] w-[434px]">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
             <img
-              src="/logo-light.png"
-              alt="Remix"
-              className="block w-full dark:hidden"
+              src="https://via.placeholder.com/64?text=Logo"
+              alt={t("elYunqueLogoAlt")}
+              className="h-8 w-8"
             />
-            <img
-              src="/logo-dark.png"
-              alt="Remix"
-              className="hidden w-full dark:block"
-            />
+            <span className="hidden font-bold sm:inline-block">
+              {t("elYunque")}
+            </span>
+          </Link>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            <Link to="/about">{t("about")}</Link>
+            <Link to="/visit">{t("visit")}</Link>
+            <Link to="/flora-fauna">{t("floraFauna")}</Link>
+            <Link to="/conservation">{t("conservation")}</Link>
+            <Link to="/research">{t("research")}</Link>
+            <Link to="/education">{t("education")}</Link>
+            <Link to="/gallery">{t("gallery")}</Link>
+          </nav>
+          <div className="ml-auto flex items-center space-x-4">
+            <LanguageSwitcher />
           </div>
-        </header>
-        <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-          <p className="leading-6 text-gray-700 dark:text-gray-200">
-            <span>{locale}</span>
-          </p>
-          <div>
-            {data.map((item: any) => (
-              <div key={item._id}>{item.body[0].children[0].text}</div>
-            ))}
+        </div>
+      </header>
+
+      <main>
+        <section className="relative">
+          <img
+            src={heroImage}
+            alt="El Yunque Rainforest"
+            className="w-full h-[600px] object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="text-center text-white">
+              <h1 className="text-4xl font-bold mb-4">
+                Welcome to El Yunque National Forest
+              </h1>
+              <p className="text-xl mb-6">
+                Discover Puerto Rico's Natural Wonder
+              </p>
+              <Button size="lg">Plan Your Visit</Button>
+            </div>
           </div>
-          <ul>
-            {resources.map(({ href, text, icon }) => (
-              <li key={href}>
-                <a
-                  className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {icon}
-                  {text}
+        </section>
+
+        <section className="py-16 bg-muted">
+          <div className="container">
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              Explore El Yunque
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {exploreImages.map((image, index) => (
+                <div key={index} className="text-center">
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    className="w-full h-48 object-cover rounded-lg mb-4"
+                  />
+                  <h3 className="text-xl font-semibold mb-2">{image.title}</h3>
+                  <p>{image.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16">
+          <div className="container">
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              {t("latestNewsEvents")}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {news.map((item, index) => (
+                <div key={index} className="border rounded-lg p-6">
+                  <h3 className="text-xl font-semibold mb-2">
+                    {t(item.title)}
+                  </h3>
+                  <p className="mb-4">{t(item.description)}</p>
+                  <Button variant="outline">{t("readMore")}</Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 bg-muted">
+          <div className="container">
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              Image Gallery
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {galleryImages.map((image, index) => (
+                <img
+                  key={index}
+                  src={image.src}
+                  alt={image.alt}
+                  className="w-full h-48 object-cover rounded-lg hover:opacity-80 transition-opacity"
+                />
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <Button>View Full Gallery</Button>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16">
+          <div className="container">
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              Stay Connected
+            </h2>
+            <div className="max-w-md mx-auto">
+              <Form method="post" className="flex gap-2">
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                />
+                <Button type="submit">Subscribe</Button>
+              </Form>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="bg-primary text-primary-foreground">
+        <div className="container py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">About El Yunque</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/about">Our Mission</Link>
+                </li>
+                <li>
+                  <Link to="/about/history">History</Link>
+                </li>
+                <li>
+                  <Link to="/about/team">Our Team</Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Visit</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/visit/plan">Plan Your Trip</Link>
+                </li>
+                <li>
+                  <Link to="/visit/trails">Trails</Link>
+                </li>
+                <li>
+                  <Link to="/visit/faq">FAQ</Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Get Involved</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/volunteer">Volunteer</Link>
+                </li>
+                <li>
+                  <Link to="/donate">Donate</Link>
+                </li>
+                <li>
+                  <Link to="/events">Events</Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Connect</h3>
+              <div className="flex space-x-4">
+                <a href="#" aria-label="Facebook">
+                  <Facebook className="h-6 w-6" />
                 </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
+                <a href="#" aria-label="Instagram">
+                  <Instagram className="h-6 w-6" />
+                </a>
+                <a href="#" aria-label="Twitter">
+                  <Twitter className="h-6 w-6" />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-primary-foreground/10 text-center">
+            <p>&copy; 2023 El Yunque National Forest. All Rights Reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
