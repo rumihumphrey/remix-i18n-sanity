@@ -4,21 +4,28 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
 } from "@remix-run/react";
 import React, { useEffect } from "react";
-
+import { useLoaderData, Link, Form } from "@remix-run/react";
+import LanguageSwitcher from "~/components/LanguageSwitcher";
 import { json } from "@remix-run/node";
 import type { LinksFunction } from "@remix-run/node";
 import { useChangeLanguage } from "remix-i18next/react";
 import { useTranslation } from "react-i18next";
 import i18next from "~/i18next.server";
 import "./tailwind.css";
+import LocaleAwareLink from "~/components/LocaleAwareLink";
 
-export async function loader({ request }: any) {
+export const loader: any = async ({ request }: any) => {
   let locale = await i18next.getLocale(request);
-  return json({ locale });
-}
+  let ENV = {
+    SANITY_STUDIO_PROJECT_ID: process.env.SANITY_STUDIO_PROJECT_ID,
+    SANITY_STUDIO_DATASET: process.env.SANITY_STUDIO_DATASET,
+    SANITY_STUDIO_URL: process.env.SANITY_STUDIO_URL,
+    SANITY_STUDIO_STEGA_ENABLED: process.env.SANITY_STUDIO_STEGA_ENABLED,
+  };
+  return json({ locale, ENV });
+};
 
 export let handle = {
   // In the handle export, we can add a i18n key with namespaces our route
@@ -42,13 +49,14 @@ export const links: LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  let { locale } = useLoaderData<typeof loader>();
+  let { locale, ENV } = useLoaderData<typeof loader>();
   let { i18n } = useTranslation();
   useChangeLanguage(locale);
+  let { t } = useTranslation();
 
-  useEffect(() => {
-    console.log("Locale changed:", locale);
-  }, [locale]);
+  // useEffect(() => {
+  //   console.log("Locale changed:", locale);
+  // }, [locale]);
 
   return (
     <html lang={locale} dir={i18n.dir()}>
@@ -59,8 +67,43 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-14 items-center">
+            <LocaleAwareLink
+              className="mr-6 flex items-center space-x-2"
+              to="/"
+            >
+              <img
+                src="https://via.placeholder.com/64?text=Logo"
+                alt={t("elYunqueLogoAlt")}
+                className="h-8 w-8"
+              />
+              <span className="hidden font-bold sm:inline-block">
+                {t("elYunque")}
+              </span>
+            </LocaleAwareLink>
+            <nav className="flex items-center space-x-6 text-sm font-medium">
+              <LocaleAwareLink to="/test">{t("visit")}</LocaleAwareLink>
+              {/* <Link to="/visit">{t("visit")}</Link>
+              <Link to="/flora-fauna">{t("floraFauna")}</Link>
+              <Link to="/conservation">{t("conservation")}</Link>
+              <Link to="/research">{t("research")}</Link>
+              <Link to="/education">{t("education")}</Link>
+              <Link to="/gallery">{t("gallery")}</Link> */}
+            </nav>
+            <div className="ml-auto flex items-center space-x-4">
+              <LanguageSwitcher />
+            </div>
+          </div>
+        </header>
+
         {children}
         <ScrollRestoration />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(ENV)}`,
+          }}
+        />
         <Scripts />
       </body>
     </html>

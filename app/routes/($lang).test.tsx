@@ -7,7 +7,7 @@ import {
   Form,
 } from "@remix-run/react";
 import i18next from "~/i18next.server";
-import { client } from "~/sanity/client";
+//import { client } from "~/sanity/client";
 import { HOME_QUERY } from "~/sanity/queries";
 import { useQuery } from "@sanity/react-loader";
 import { type LoaderFunctionArgs } from "@remix-run/node";
@@ -22,10 +22,10 @@ import { Button } from "~/components/ui/button";
 //   return { data: data[0], locale, params };
 // };
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-  const initial = await loadQuery<any>(HOME_QUERY, params);
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   let locale = await i18next.getLocale(request);
-
+  const params = { locale: locale };
+  const initial = await loadQuery<any>(HOME_QUERY, params);
   return { initial, query: HOME_QUERY, params, locale };
 };
 
@@ -75,7 +75,7 @@ export default function Test() {
   return (
     <section id="about" className="p-10 md:p-20 bg-green-100">
       <h2 className="text-4xl font-bold mb-12 text-left">Learn More</h2>
-      {JSON.stringify(data.heroSection.backgroundImage)}
+      {JSON.stringify(data.heroSection)}
       <br />
       {`locale: ${locale}`}
       <img src={urlFor(data.heroSection.backgroundImage).url()} alt="" />

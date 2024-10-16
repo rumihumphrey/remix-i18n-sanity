@@ -73,7 +73,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
           <Link to="/" className="mr-6 flex items-center space-x-2">
             <img
@@ -98,7 +98,7 @@ export default function Index() {
             <LanguageSwitcher />
           </div>
         </div>
-      </header>
+      </header> */}
 
       <main>
         <section className="relative">

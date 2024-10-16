@@ -16,7 +16,7 @@ const {
   SANITY_STUDIO_STEGA_ENABLED = false,
 } = typeof document === "undefined" ? process.env : window.ENV;
 
-export const projectId = process.env.SANITY_STUDIO_PROJECT_ID!;
+export const projectId = SANITY_STUDIO_PROJECT_ID!;
 export const dataset = SANITY_STUDIO_DATASET!;
 export const studioUrl = SANITY_STUDIO_URL!;
 export const stegaEnabled = SANITY_STUDIO_STEGA_ENABLED === "true";

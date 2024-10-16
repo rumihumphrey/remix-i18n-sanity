@@ -16,7 +16,6 @@ export default function LanguageSwitcher() {
   const handleLanguageSwitch = () => {
     const newLocale = locale === "es" ? "en" : "es";
     i18n.changeLanguage(newLocale);
-
     // Construct the new path based on the current path and new locale
     const newPath =
       newLocale === "es"
@@ -24,7 +23,7 @@ export default function LanguageSwitcher() {
         : location.pathname.replace(/^\/es/, "");
 
     // Navigate to the new path
-    navigate(newPath, { replace: true });
+    window.location.href = newPath;
   };
 
   return (
